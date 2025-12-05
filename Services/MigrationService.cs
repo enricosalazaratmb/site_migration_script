@@ -144,7 +144,7 @@ namespace SiteLocationMigration.Services
                 {
                     ParentId = parentUnitedStatesGeography.GeographyId,
                     ExternalKey = usaSiteLocation.WebKey,
-                    GeoCity = usaSiteLocation.DefaultText,
+                    GeoCity = null, // Set to null per request
                     GeoCountryName = "United States",
                     GeoCountryISO = "USA",
                     GeoLatitude = usaSiteLocation.MapLat,
