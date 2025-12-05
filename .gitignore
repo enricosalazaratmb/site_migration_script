@@ -6,6 +6,8 @@ appsettings.Staging.json
 packages/
 *.nupkg
 
+.vs/
+
 [Bb]in/
 [Oo]bj/
 *.exe
