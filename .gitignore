@@ -1,0 +1,14 @@
+appsettings.json
+appsettings.Development.json
+appsettings.Staging.json
+
+.nuget/
+packages/
+*.nupkg
+
+[Bb]in/
+[Oo]bj/
+*.exe
+*.dll
+*.pdb
+*.suo
