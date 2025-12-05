@@ -66,7 +66,7 @@ namespace SiteLocationMigration.Services
                 await AssignGeographiesToLocations();
 
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"SUCCESS: Done.");
+                Console.WriteLine($"\n\nSUCCESS: Done.\n\n");
                 Console.ResetColor();
             }
             catch (Exception ex)
@@ -217,6 +217,7 @@ namespace SiteLocationMigration.Services
 
                     Console.WriteLine($"======================== GiveLocationsGeographies ========================");
                     Console.WriteLine($"INSERTED in ENT_GeographyLocation table. Rows affected: {recordsAffected}");
+                    Console.WriteLine($"Total ENT_GeographyLocation records inserted as of running: {locationInsertedCount}");
                     Console.WriteLine($"================================================");
                 }
                 catch (Exception ex)
@@ -226,10 +227,6 @@ namespace SiteLocationMigration.Services
                     Console.WriteLine($"Error: {ex.Message}");
                     Console.ResetColor();
                 }
-
-                Console.WriteLine($"======================== GiveLocationsGeographies ========================");
-                Console.WriteLine($"Total ENT_GeographyLocation records inserted: {locationInsertedCount}");
-                Console.WriteLine($"================================================");
             }
 
         }
