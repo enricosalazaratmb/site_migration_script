@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design.Internal;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using SiteLocationMigration.Db;
 using SiteLocationMigration.Helpers;
 using SiteLocationMigration.Models;
@@ -167,8 +168,14 @@ namespace SiteLocationMigration.Services
             var preexistingLocations = (await _modernAtmbContext.Locations.ToListAsync());
             var preexistingGeographyLocations = (await _modernAtmbContext.GeographyLocations.ToListAsync());
 
-            foreach(var location in preexistingLocations)
+            int locationIndex = 1;
+            int locationInsertedCount = 0;
+
+            for(int i = 0; i < preexistingLocations.Count; i++)
             {
+                var location = preexistingLocations[i];
+                Console.WriteLine($"Location {locationIndex}/{preexistingLocations.Count} being migrated: ${location.Name}, LocationId: {location.LocationId}");
+
                 var geography = preexistingGeographies.Where(g => g.GeoRegionName == location.GeoRegionName).FirstOrDefault();
 
                 if (geography == null)
@@ -206,6 +213,7 @@ namespace SiteLocationMigration.Services
 
                     await _modernAtmbContext.GeographyLocations.AddAsync(newGeographyLocation);
                     int recordsAffected = await _modernAtmbContext.SaveChangesAsync();
+                    locationInsertedCount++;
 
                     Console.WriteLine($"======================== GiveLocationsGeographies ========================");
                     Console.WriteLine($"INSERTED in ENT_GeographyLocation table. Rows affected: {recordsAffected}");
@@ -218,6 +226,10 @@ namespace SiteLocationMigration.Services
                     Console.WriteLine($"Error: {ex.Message}");
                     Console.ResetColor();
                 }
+
+                Console.WriteLine($"======================== GiveLocationsGeographies ========================");
+                Console.WriteLine($"Total ENT_GeographyLocation records inserted: {locationInsertedCount}");
+                Console.WriteLine($"================================================");
             }
 
         }
