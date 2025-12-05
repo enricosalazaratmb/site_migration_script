@@ -19,6 +19,7 @@ var services = new ServiceCollection();
 var databaseSettingsConfiguration = configuration.GetSection("DatabaseSettings");
 var appSettings = databaseSettingsConfiguration.Get<AppSettings>();
 
+//
 // Adding services
 services.AddSingleton(appSettings);
 
