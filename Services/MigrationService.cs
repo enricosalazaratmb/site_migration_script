@@ -78,7 +78,7 @@ namespace SiteLocationMigration.Services
             }
         }
 
-        public async Task MigrateUsaSiteLocationsToGeographies()
+        private async Task MigrateUsaSiteLocationsToGeographies()
         {
             const int USA_SIT_LOC_ID = 1;
 
@@ -154,7 +154,7 @@ namespace SiteLocationMigration.Services
             }
         }
 
-        public async Task AssignGeographiesToLocations()
+        private async Task AssignGeographiesToLocations()
         {
             var preexistingGeographies = (await _modernAtmbContext.Geographies.ToListAsync());
             var preexistingLocations = (await _modernAtmbContext.Locations.ToListAsync());
