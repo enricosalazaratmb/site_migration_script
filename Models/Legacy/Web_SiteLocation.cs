@@ -32,9 +32,5 @@ namespace SiteLocationMigration.Models.Legacy
         [Required][StringLength(2)] public string CountryIso2 { get; set; } = string.Empty;
 
         [Required][MaxLength(50)][Column(TypeName = "varchar(50)")] public string GeoRegion { get; set; } = string.Empty;
-
-        // FIX: Changed to nullable Guid?
-        public Guid? LocationId { get; set; }
-        public Guid? ParentLocationId { get; set; }
     }
 }

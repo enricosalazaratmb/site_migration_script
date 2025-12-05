@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Identity.Client;
 using SiteLocationMigration.Db;
 using SiteLocationMigration.Helpers;
 using SiteLocationMigration.Models;
@@ -29,13 +30,12 @@ namespace SiteLocationMigration.Services
         public async Task CheckConnection()
         {
             bool isLegacyContextConnected = await _legacyAtmbContext.Database.CanConnectAsync();
-            bool isModernContextConnected = await _modernAtmbContext.Database.CanConnectAsync();
-
             if (!isLegacyContextConnected)
             {
                 throw new Exception("Missing legacy context!");
             }
 
+            bool isModernContextConnected = await _modernAtmbContext.Database.CanConnectAsync();
             if (!isModernContextConnected)
             {
                 throw new Exception("Missing modern context!");
@@ -184,17 +184,19 @@ namespace SiteLocationMigration.Services
 
         private async Task AssignGeographiesToLocations()
         {
+            // Set to 2000 per request
+            const int MAX_RECORDS_TO_ADD = 5;
+
             var preexistingGeographies = (await _modernAtmbContext.Geographies.ToListAsync());
             var preexistingLocations = (await _modernAtmbContext.Locations.ToListAsync());
             var preexistingGeographyLocations = (await _modernAtmbContext.GeographyLocations.ToListAsync());
 
-            int locationIndex = 1;
             int locationInsertedCount = 0;
 
-            for(int i = 0; i < preexistingLocations.Count; i++)
+            for(int i = 0; locationInsertedCount < MAX_RECORDS_TO_ADD; i++)
             {
                 var location = preexistingLocations[i];
-                Console.WriteLine($"Location {locationIndex}/{preexistingLocations.Count} being migrated: ${location.Name}, LocationId: {location.LocationId}");
+                Console.WriteLine($"GeographyLocation {i}/{preexistingLocations.Count} being migrated: ${location.Name}, LocationId: {location.LocationId}");
 
                 var geography = preexistingGeographies.Where(g => g.GeoRegionName == location.GeoRegionName).FirstOrDefault();
 
