@@ -62,14 +62,6 @@ namespace SiteLocationMigration.Services
 
             try
             {
-                var sites = await _legacyAtmbContext.Sites.ToListAsync();
-               
-                var siteLocationItems = await _legacyAtmbContext.SiteLocationItems.ToListAsync();
-
-                var locations = await _modernAtmbContext.Locations.ToListAsync();
-
-                var geographyLocations = await _modernAtmbContext.GeographyLocations.ToListAsync();
-
                 await MigrateUsaSiteLocationsToGeographies();
                 await AssignGeographiesToLocations();
 
