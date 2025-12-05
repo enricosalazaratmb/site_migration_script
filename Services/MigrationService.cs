@@ -66,7 +66,7 @@ namespace SiteLocationMigration.Services
                 await AssignGeographiesToLocations();
 
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"SUCCESS: Found {sites.Count} sites in the Legacy Database.");
+                Console.WriteLine($"SUCCESS: Done.");
                 Console.ResetColor();
             }
             catch (Exception ex)
