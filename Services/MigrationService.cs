@@ -63,6 +63,7 @@ namespace SiteLocationMigration.Services
             try
             {
                 await MigrateUsaSiteLocationsToGeographies();
+                await SetGeoCityToNull();
                 await AssignGeographiesToLocations();
 
                 Console.ForegroundColor = ConsoleColor.Green;
@@ -73,6 +74,33 @@ namespace SiteLocationMigration.Services
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"FAILURE: Error during migration.");
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.ResetColor();
+            }
+        }
+
+        /// <summary>
+        /// Per request, all GeoCity fields in ENT_Geography should be set to null.
+        /// </summary>
+        /// <returns></returns>
+        private async Task SetGeoCityToNull()
+        {
+            var geographiesToUpdate = await _modernAtmbContext.Geographies.Where(g => g.GeoCity != null).ToListAsync();
+            foreach (var geography in geographiesToUpdate)
+            {
+                geography.GeoCity = null;
+            }
+            try
+            {
+                int recordsAffected = await _modernAtmbContext.SaveChangesAsync();
+                Console.WriteLine($"======================== SetGeoCityToNull ========================");
+                Console.WriteLine($"UPDATED ENT_Geography table. Rows affected: {recordsAffected}");
+                Console.WriteLine($"================================================");
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"FAILURE: Could not update geographies to set GeoCity to null.");
                 Console.WriteLine($"Error: {ex.Message}");
                 Console.ResetColor();
             }
