@@ -188,6 +188,14 @@ namespace SiteLocationMigration.Services
                     continue;
                 }
 
+                var existingGeographyLocation = preexistingGeographyLocations.Where(gl => gl.LocationId == location.LocationId).FirstOrDefault();
+
+                if (existingGeographyLocation != null)
+                {
+                    Console.WriteLine($"GeographyLocation link already exists for location ({location.Name} - {location.LocationId}). Delete first.");
+                    continue;
+                }
+
                 var geographyLocation = preexistingGeographyLocations.Where(gl => gl.LocationId == location.LocationId && gl.GeographyId == geography.GeographyId).FirstOrDefault();
 
                 if (geographyLocation != null)
