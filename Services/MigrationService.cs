@@ -120,6 +120,7 @@ namespace SiteLocationMigration.Services
             var parentSiteLocations = (await _legacyAtmbContext.SiteLocations.ToListAsync()).Where(sl => sl.DefaultText != string.Empty && sl.ParentSitLocId == 0).ToList();
             var existingExternalKeys = await _modernAtmbContext.Geographies.Select(g => g.ExternalKey).Where(k => k != null).Distinct().ToListAsync();
             var existingKeysSet = new HashSet<string>(existingExternalKeys, StringComparer.OrdinalIgnoreCase);
+            var keysInCurrentBatch = new HashSet<string>();
             var geographies = new List<ENT_Geography>();
 
             var index = 1;
@@ -136,9 +137,16 @@ namespace SiteLocationMigration.Services
                     continue;
                 }
 
+                if (keysInCurrentBatch.Contains(parentSiteLocation.WebKey))
+                {
+                    Console.WriteLine($"Location '{parentSiteLocation.DefaultText}' is a duplicate within the source data. Skipping.");
+                    index++;
+                    continue;
+                }
+
                 var geographyEquivalent = new ENT_Geography()
                 {
-                    ParentId = Guid.Empty,
+                    ParentId = new Guid("00000000-0000-0000-0000-000000000001"), // for parent/root records
                     ExternalKey = parentSiteLocation.WebKey,
                     GeoCity = null, // Set to null per request
                     GeoCountryName = parentSiteLocation.DefaultText,
@@ -188,6 +196,8 @@ namespace SiteLocationMigration.Services
             var siteLocations = (await _legacyAtmbContext.SiteLocations.ToListAsync()).Where(sl => sl.DefaultText != string.Empty && sl.ParentSitLocId != 0).ToList();
             var existingExternalKeys = await _modernAtmbContext.Geographies.Select(g => g.ExternalKey).Where(k => k != null).Distinct().ToListAsync();
             var existingKeysSet = new HashSet<string>(existingExternalKeys, StringComparer.OrdinalIgnoreCase);
+            var keysInCurrentBatch = new HashSet<string>();
+
             var geographies = new List<ENT_Geography>();
 
             var index = 1;
@@ -231,7 +241,7 @@ namespace SiteLocationMigration.Services
                     existingGeography.GeoCountryISO = regionInfo?.ThreeLetterISORegionName ?? "";
                     existingGeography.GeoRegionISO = regionInfo?.TwoLetterISORegionName ?? "";
                     existingGeography.Name = siteLocation.DefaultText;
-                    existingGeography.GeoCountryName = siteLocation.DefaultText;
+                    existingGeography.GeoCountryName = parentLocation.DefaultText;
 
                     try
                     {
@@ -253,12 +263,19 @@ namespace SiteLocationMigration.Services
                     continue;
                 }
 
+                if (keysInCurrentBatch.Contains(siteLocation.WebKey))
+                {
+                    Console.WriteLine($"Location '{siteLocation.DefaultText}' is a duplicate within the source data. Skipping.");
+                    index++;
+                    continue;
+                }
+
                 var geographyEquivalent = new ENT_Geography()
                 {
                     ParentId = parentGeography.GeographyId,
                     ExternalKey = siteLocation.WebKey,
                     GeoCity = null, // Set to null per request
-                    GeoCountryName = siteLocation.DefaultText,
+                    GeoCountryName = parentLocation.DefaultText,
                     GeoCountryISO = regionInfo?.ThreeLetterISORegionName ?? "",
                     GeoLatitude = siteLocation.MapLat,
                     GeoLongitude = siteLocation.MapLong,
@@ -274,6 +291,8 @@ namespace SiteLocationMigration.Services
                 };
 
                 geographies.Add(geographyEquivalent);
+                keysInCurrentBatch.Add(siteLocation.WebKey);
+
                 index++;
             }
 
@@ -408,8 +427,8 @@ namespace SiteLocationMigration.Services
         private async Task AssignGeographiesToLocations()
         {
             // Set to 2000 per request
-            const int MAX_RECORDS_TO_ADD = 5;
-            const bool IS_INTERNATIONAL = true;
+            const int MAX_RECORDS_TO_ADD = 1000;
+            const bool IS_INTERNATIONAL = false;
 
             var preexistingGeographies = (await _modernAtmbContext.Geographies.ToListAsync());
             var preexistingLocations = IS_INTERNATIONAL ? (await _modernAtmbContext.Locations.Where(l => l.GeoCountryISO != "USA").ToListAsync()) : (await _modernAtmbContext.Locations.ToListAsync());
@@ -417,7 +436,7 @@ namespace SiteLocationMigration.Services
 
             int locationInsertedCount = 0;
 
-            for(int i = 0; locationInsertedCount < MAX_RECORDS_TO_ADD; i++)
+            for(int i = 0; locationInsertedCount < MAX_RECORDS_TO_ADD && i < preexistingLocations.Count; i++)
             {
                 var location = preexistingLocations[i];
                 Console.WriteLine($"GeographyLocation {i}/{preexistingLocations.Count} being migrated: ${location.Name}, LocationId: {location.LocationId}");
